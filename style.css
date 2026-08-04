@@ -1682,6 +1682,12 @@ ul {
   color: var(--color-gold);
 }
 
+.footer-credit:hover, 
+.footer-credit:active {
+    text-decoration: underline;
+}
+
+
 /* ============================================
    WHATSAPP FLOAT
    ============================================ */
