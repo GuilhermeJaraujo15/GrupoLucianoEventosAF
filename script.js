@@ -59,7 +59,6 @@
   const heroBg = document.querySelector('.hero-background');
 
   if (heroVideo) {
-    // Configura o loop
     heroVideo.loop = true;
 
     if (heroBg) {
@@ -112,7 +111,7 @@
   }
 
   // ============================================
-  // ABOUT CAROUSEL
+  // ABOUT CAROUSEL - TOTALMENTE DINÂMICO
   // ============================================
   const carousel = document.getElementById('aboutCarousel');
   const track = document.getElementById('aboutCarouselTrack');
@@ -121,91 +120,126 @@
   const dotsContainer = document.getElementById('aboutCarouselDots');
 
   if (carousel && track && prevBtn && nextBtn && dotsContainer) {
-    const cards = track.querySelectorAll('.about-carousel-card');
+    const cards = Array.from(track.querySelectorAll('.about-carousel-card'));
     const totalCards = cards.length;
-    let currentIndex = 0;
-    let cardsPerView = 3;
-    let autoPlayInterval = null;
-    let isTransitioning = false;
 
-    // Calcula quantos cards cabem por view
+    if (totalCards === 0) return;
+
+    let currentIndex = 0;
+    let cardsPerView = 1;
+    let autoPlayInterval = null;
+    let gap = 20;
+    let touchStartX = 0;
+    let touchEndX = 0;
+
     function getCardsPerView() {
       const width = window.innerWidth;
       if (width < 480) return 1;
       if (width < 768) return 2;
-      if (width < 992) return 2;
-      return 3;
+      if (width < 1200) return 2;
+      if (width < 1440) return 3;
+      return Math.min(4, totalCards);
     }
 
-    // Atualiza o carrossel
-    function updateCarousel(animate = true) {
-      if (isTransitioning) return;
-      
+    function getGap() {
+      const trackStyle = window.getComputedStyle(track);
+      return parseFloat(trackStyle.columnGap || trackStyle.gap || 20) || 20;
+    }
+
+    function getSlideWidth() {
+      const carouselStyle = window.getComputedStyle(carousel);
+      const paddingLeft = parseFloat(carouselStyle.paddingLeft) || 0;
+      const paddingRight = parseFloat(carouselStyle.paddingRight) || 0;
+      const availableWidth = carousel.clientWidth - paddingLeft - paddingRight;
+      const usableWidth = Math.max(availableWidth, 0);
+      const totalGap = gap * Math.max(cardsPerView - 1, 0);
+      return Math.max((usableWidth - totalGap) / cardsPerView, 0);
+    }
+
+    function updateCardWidths() {
+      const slideWidth = getSlideWidth();
+      cards.forEach(function(card) {
+        card.style.flex = `0 0 ${slideWidth}px`;
+        card.style.maxWidth = `${slideWidth}px`;
+      });
+    }
+
+    function updateCarousel(animate) {
       const newCardsPerView = getCardsPerView();
       if (newCardsPerView !== cardsPerView) {
         cardsPerView = newCardsPerView;
-        // Recalcula o índice máximo
         const maxIndex = Math.max(0, totalCards - cardsPerView);
-        if (currentIndex > maxIndex) {
-          currentIndex = maxIndex;
-        }
+        currentIndex = Math.min(currentIndex, maxIndex);
       }
 
-      const cardWidth = cards[0]?.offsetWidth || 0;
-      const gap = 20; // mesmo valor do gap no CSS
-      const offset = currentIndex * (cardWidth + gap);
-      
+      gap = getGap();
+      updateCardWidths();
+
+      const slideWidth = getSlideWidth();
+      const offset = currentIndex * (slideWidth + gap);
       track.style.transition = animate ? 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'none';
       track.style.transform = `translateX(-${offset}px)`;
-      
       updateDots();
+      updateButtons();
     }
 
-    // Cria os indicadores (dots)
     function createDots() {
       dotsContainer.innerHTML = '';
-      const totalDots = Math.max(1, totalCards - cardsPerView + 1);
-      
-      for (let i = 0; i < totalDots; i++) {
+      const totalSlides = Math.max(1, totalCards - cardsPerView + 1);
+
+      for (let i = 0; i < totalSlides; i++) {
         const dot = document.createElement('button');
         dot.className = 'about-carousel-dot';
         dot.setAttribute('role', 'tab');
         dot.setAttribute('aria-label', `Ir para slide ${i + 1}`);
-        dot.dataset.index = i;
+        dot.dataset.index = String(i);
         dot.addEventListener('click', function() {
-          goToSlide(parseInt(this.dataset.index));
+          goToSlide(parseInt(this.dataset.index, 10));
         });
         dotsContainer.appendChild(dot);
       }
-      
+
       updateDots();
     }
 
     function updateDots() {
       const dots = dotsContainer.querySelectorAll('.about-carousel-dot');
-      const maxIndex = Math.max(0, totalCards - cardsPerView);
-      const activeDot = Math.min(currentIndex, maxIndex);
-      
-      dots.forEach((dot, index) => {
+      const totalSlides = Math.max(1, totalCards - cardsPerView + 1);
+
+      if (totalSlides <= 1) {
+        dotsContainer.style.display = 'none';
+        return;
+      }
+
+      dotsContainer.style.display = 'flex';
+      const activeDot = Math.min(currentIndex, totalSlides - 1);
+      dots.forEach(function(dot, index) {
         dot.classList.toggle('is-active', index === activeDot);
       });
     }
 
+    function updateButtons() {
+      const totalSlides = Math.max(1, totalCards - cardsPerView + 1);
+      const isSingleSlide = totalSlides <= 1;
+      prevBtn.disabled = isSingleSlide;
+      nextBtn.disabled = isSingleSlide;
+      prevBtn.style.opacity = isSingleSlide ? '0.4' : '1';
+      nextBtn.style.opacity = isSingleSlide ? '0.4' : '1';
+    }
+
     function goToSlide(index) {
-      if (isTransitioning) return;
-      
-      const maxIndex = Math.max(0, totalCards - cardsPerView);
-      const targetIndex = Math.max(0, Math.min(index, maxIndex));
-      
+      const totalSlides = Math.max(1, totalCards - cardsPerView + 1);
+      const targetIndex = Math.max(0, Math.min(index, totalSlides - 1));
+
       if (targetIndex === currentIndex) return;
-      
+
       currentIndex = targetIndex;
       updateCarousel(true);
     }
 
     function nextSlide() {
-      const maxIndex = Math.max(0, totalCards - cardsPerView);
-      if (currentIndex >= maxIndex) {
+      const totalSlides = Math.max(1, totalCards - cardsPerView + 1);
+      if (currentIndex >= totalSlides - 1) {
         goToSlide(0);
       } else {
         goToSlide(currentIndex + 1);
@@ -213,15 +247,30 @@
     }
 
     function prevSlide() {
+      const totalSlides = Math.max(1, totalCards - cardsPerView + 1);
       if (currentIndex <= 0) {
-        const maxIndex = Math.max(0, totalCards - cardsPerView);
-        goToSlide(maxIndex);
+        goToSlide(totalSlides - 1);
       } else {
         goToSlide(currentIndex - 1);
       }
     }
 
-    // Event Listeners
+    function startAutoPlay() {
+      clearInterval(autoPlayInterval);
+      const totalSlides = Math.max(1, totalCards - cardsPerView + 1);
+      if (totalSlides <= 1) return;
+
+      autoPlayInterval = setInterval(function() {
+        if (!document.hidden) {
+          nextSlide();
+        }
+      }, 4000);
+    }
+
+    function stopAutoPlay() {
+      clearInterval(autoPlayInterval);
+    }
+
     prevBtn.addEventListener('click', function() {
       clearInterval(autoPlayInterval);
       prevSlide();
@@ -234,29 +283,11 @@
       startAutoPlay();
     });
 
-    // Auto-play
-    function startAutoPlay() {
-      clearInterval(autoPlayInterval);
-      autoPlayInterval = setInterval(function() {
-        if (!document.hidden) {
-          nextSlide();
-        }
-      }, 4000);
-    }
-
-    function stopAutoPlay() {
-      clearInterval(autoPlayInterval);
-    }
-
-    // Pausa o auto-play quando o mouse está sobre o carrossel
     carousel.addEventListener('mouseenter', stopAutoPlay);
     carousel.addEventListener('mouseleave', startAutoPlay);
-    
-    // Pausa em dispositivos touch
     carousel.addEventListener('touchstart', stopAutoPlay, { passive: true });
     carousel.addEventListener('touchend', startAutoPlay, { passive: true });
 
-    // Suporte a teclado
     carousel.addEventListener('keydown', function(e) {
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
@@ -267,38 +298,6 @@
       }
     });
 
-    // Inicializa
-    createDots();
-    
-    // Delay para garantir que o layout esteja pronto
-    setTimeout(function() {
-      updateCarousel(false);
-      startAutoPlay();
-    }, 100);
-
-    // Recalcula em redimensionamento
-    let resizeTimeout;
-    window.addEventListener('resize', function() {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(function() {
-        const newCardsPerView = getCardsPerView();
-        if (newCardsPerView !== cardsPerView) {
-          cardsPerView = newCardsPerView;
-          const maxIndex = Math.max(0, totalCards - cardsPerView);
-          if (currentIndex > maxIndex) {
-            currentIndex = maxIndex;
-          }
-          updateCarousel(false);
-          createDots();
-        }
-        updateCarousel(false);
-      }, 200);
-    });
-
-    // Suporte a swipe touch
-    let touchStartX = 0;
-    let touchEndX = 0;
-    
     track.addEventListener('touchstart', function(e) {
       touchStartX = e.changedTouches[0].screenX;
       stopAutoPlay();
@@ -307,8 +306,8 @@
     track.addEventListener('touchend', function(e) {
       touchEndX = e.changedTouches[0].screenX;
       const diff = touchStartX - touchEndX;
-      
-      if (Math.abs(diff) > 50) {
+
+      if (Math.abs(diff) > 40) {
         if (diff > 0) {
           nextSlide();
         } else {
@@ -317,6 +316,57 @@
       }
       startAutoPlay();
     }, { passive: true });
+
+    createDots();
+
+    setTimeout(function() {
+      updateCarousel(false);
+      const totalSlides = Math.max(1, totalCards - cardsPerView + 1);
+      if (totalSlides > 1) {
+        startAutoPlay();
+      }
+    }, 150);
+
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(function() {
+        const newCardsPerView = getCardsPerView();
+        const totalSlides = Math.max(1, totalCards - newCardsPerView + 1);
+
+        if (currentIndex >= totalSlides) {
+          currentIndex = totalSlides - 1;
+        }
+
+        updateCarousel(false);
+
+        const oldTotalSlides = dotsContainer.querySelectorAll('.about-carousel-dot').length;
+        if (oldTotalSlides !== totalSlides) {
+          createDots();
+        } else {
+          updateDots();
+        }
+
+        stopAutoPlay();
+        if (totalSlides > 1) {
+          startAutoPlay();
+        }
+      }, 250);
+    });
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            updateCarousel(false);
+          }
+        });
+      }, {
+        threshold: 0.1
+      });
+
+      observer.observe(carousel);
+    }
   }
 
   // ============================================
