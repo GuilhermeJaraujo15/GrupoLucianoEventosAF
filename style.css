@@ -1631,8 +1631,16 @@ ul {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 24px;
   padding: 40px 0 32px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.footer-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
 }
 
 .footer-brand .logo-grupo {
@@ -1645,6 +1653,28 @@ ul {
 
 .footer-brand .logo-eventos {
   font-size: 0.7rem;
+}
+
+.footer-logo-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 220px;
+  min-height: 96px;
+  padding: 16px 24px;
+  border: 1px dashed rgba(201, 168, 76, 0.35);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.08), rgba(255, 255, 255, 0.02));
+  overflow: hidden;
+}
+
+.footer-logo-image {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .footer-nav {
@@ -1745,6 +1775,18 @@ ul {
     flex-direction: column;
     gap: 20px;
     text-align: center;
+    align-items: center;
+  }
+
+  .footer-brand {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .footer-logo-slot {
+    min-width: min(100%, 240px);
+    min-height: 82px;
+    width: 100%;
   }
   
   .footer-nav {
@@ -1829,6 +1871,20 @@ ul {
 @media (max-width: 480px) {
   .container {
     padding: 0 16px;
+  }
+
+  .footer-main {
+    padding: 32px 0 24px;
+  }
+
+  .footer-brand {
+    display: none;
+  }
+
+  .footer-logo-slot {
+    min-height: 96px;
+    border-radius: 14px;
+    font-size: 0.8rem;
   }
 
   .hero-headline {
