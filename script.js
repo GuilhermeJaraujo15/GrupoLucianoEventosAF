@@ -126,167 +126,123 @@
     if (totalCards === 0) return;
 
     let currentIndex = 0;
-    let cardsPerView = 1;
     let autoPlayInterval = null;
-    let gap = 20;
-    let touchStartX = 0;
-    let touchEndX = 0;
+    let isAutoPlayPaused = false;
 
-    function getCardsPerView() {
-      const width = window.innerWidth;
-      if (width < 480) return 1;
-      if (width < 768) return 2;
-      if (width < 1200) return 2;
-      if (width < 1440) return 3;
-      return Math.min(4, totalCards);
-    }
-
-    function getGap() {
-      const trackStyle = window.getComputedStyle(track);
-      return parseFloat(trackStyle.columnGap || trackStyle.gap || 20) || 20;
-    }
-
-    function getSlideWidth() {
-      const carouselStyle = window.getComputedStyle(carousel);
-      const paddingLeft = parseFloat(carouselStyle.paddingLeft) || 0;
-      const paddingRight = parseFloat(carouselStyle.paddingRight) || 0;
-      const availableWidth = carousel.clientWidth - paddingLeft - paddingRight;
-      const usableWidth = Math.max(availableWidth, 0);
-      const totalGap = gap * Math.max(cardsPerView - 1, 0);
-      return Math.max((usableWidth - totalGap) / cardsPerView, 0);
-    }
-
-    function updateCardWidths() {
-      const slideWidth = getSlideWidth();
-      cards.forEach(function(card) {
-        card.style.flex = `0 0 ${slideWidth}px`;
-        card.style.maxWidth = `${slideWidth}px`;
-      });
-    }
-
-    function updateCarousel(animate) {
-      const newCardsPerView = getCardsPerView();
-      if (newCardsPerView !== cardsPerView) {
-        cardsPerView = newCardsPerView;
-        const maxIndex = Math.max(0, totalCards - cardsPerView);
-        currentIndex = Math.min(currentIndex, maxIndex);
-      }
-
-      gap = getGap();
-      updateCardWidths();
-
-      const slideWidth = getSlideWidth();
-      const offset = currentIndex * (slideWidth + gap);
-      track.style.transition = animate ? 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'none';
-      track.style.transform = `translateX(-${offset}px)`;
-      updateDots();
-      updateButtons();
-    }
-
-    function createDots() {
+    function buildDots() {
       dotsContainer.innerHTML = '';
-      const totalSlides = Math.max(1, totalCards - cardsPerView + 1);
-
-      for (let i = 0; i < totalSlides; i++) {
+      cards.forEach(function(_, index) {
         const dot = document.createElement('button');
+        dot.type = 'button';
         dot.className = 'about-carousel-dot';
         dot.setAttribute('role', 'tab');
-        dot.setAttribute('aria-label', `Ir para slide ${i + 1}`);
-        dot.dataset.index = String(i);
+        dot.setAttribute('aria-label', `Ir para slide ${index + 1}`);
+        dot.dataset.index = String(index);
         dot.addEventListener('click', function() {
-          goToSlide(parseInt(this.dataset.index, 10));
+          scrollToCard(index);
         });
         dotsContainer.appendChild(dot);
-      }
-
+      });
       updateDots();
     }
 
     function updateDots() {
       const dots = dotsContainer.querySelectorAll('.about-carousel-dot');
-      const totalSlides = Math.max(1, totalCards - cardsPerView + 1);
-
-      if (totalSlides <= 1) {
-        dotsContainer.style.display = 'none';
-        return;
-      }
-
-      dotsContainer.style.display = 'flex';
-      const activeDot = Math.min(currentIndex, totalSlides - 1);
       dots.forEach(function(dot, index) {
-        dot.classList.toggle('is-active', index === activeDot);
+        dot.classList.toggle('is-active', index === currentIndex);
       });
+      dotsContainer.style.display = totalCards > 1 ? 'flex' : 'none';
     }
 
     function updateButtons() {
-      const totalSlides = Math.max(1, totalCards - cardsPerView + 1);
-      const isSingleSlide = totalSlides <= 1;
-      prevBtn.disabled = isSingleSlide;
-      nextBtn.disabled = isSingleSlide;
-      prevBtn.style.opacity = isSingleSlide ? '0.4' : '1';
-      nextBtn.style.opacity = isSingleSlide ? '0.4' : '1';
+      const disabled = totalCards <= 1;
+      prevBtn.disabled = disabled;
+      nextBtn.disabled = disabled;
+      prevBtn.style.opacity = disabled ? '0.35' : '1';
+      nextBtn.style.opacity = disabled ? '0.35' : '1';
     }
 
-    function goToSlide(index) {
-      const totalSlides = Math.max(1, totalCards - cardsPerView + 1);
-      const targetIndex = Math.max(0, Math.min(index, totalSlides - 1));
-
-      if (targetIndex === currentIndex) return;
-
-      currentIndex = targetIndex;
-      updateCarousel(true);
+    function scrollToCard(index, behavior = 'smooth') {
+      currentIndex = Math.max(0, Math.min(index, totalCards - 1));
+      const card = cards[currentIndex];
+      if (!card) return;
+      carousel.scrollTo({ left: card.offsetLeft - track.offsetLeft, behavior });
+      updateDots();
     }
 
     function nextSlide() {
-      const totalSlides = Math.max(1, totalCards - cardsPerView + 1);
-      if (currentIndex >= totalSlides - 1) {
-        goToSlide(0);
-      } else {
-        goToSlide(currentIndex + 1);
-      }
+      const nextIndex = currentIndex >= totalCards - 1 ? 0 : currentIndex + 1;
+      scrollToCard(nextIndex);
     }
 
     function prevSlide() {
-      const totalSlides = Math.max(1, totalCards - cardsPerView + 1);
-      if (currentIndex <= 0) {
-        goToSlide(totalSlides - 1);
-      } else {
-        goToSlide(currentIndex - 1);
-      }
+      const prevIndex = currentIndex <= 0 ? totalCards - 1 : currentIndex - 1;
+      scrollToCard(prevIndex);
     }
 
     function startAutoPlay() {
-      clearInterval(autoPlayInterval);
-      const totalSlides = Math.max(1, totalCards - cardsPerView + 1);
-      if (totalSlides <= 1) return;
-
-      autoPlayInterval = setInterval(function() {
-        if (!document.hidden) {
-          nextSlide();
-        }
-      }, 4000);
+      if (isAutoPlayPaused || totalCards <= 1) return;
+      stopAutoPlay();
+      autoPlayInterval = setInterval(nextSlide, 4500);
     }
 
     function stopAutoPlay() {
       clearInterval(autoPlayInterval);
+      autoPlayInterval = null;
+    }
+
+    function handleScroll() {
+      const currentScroll = carousel.scrollLeft + carousel.clientWidth * 0.05;
+      let nearest = 0;
+      let smallest = Number.POSITIVE_INFINITY;
+      cards.forEach(function(card, index) {
+        const distance = Math.abs(card.offsetLeft - track.offsetLeft - currentScroll);
+        if (distance < smallest) {
+          smallest = distance;
+          nearest = index;
+        }
+      });
+      if (nearest !== currentIndex) {
+        currentIndex = nearest;
+        updateDots();
+      }
     }
 
     prevBtn.addEventListener('click', function() {
-      clearInterval(autoPlayInterval);
       prevSlide();
-      startAutoPlay();
+      stopAutoPlay();
+      isAutoPlayPaused = true;
     });
 
     nextBtn.addEventListener('click', function() {
-      clearInterval(autoPlayInterval);
       nextSlide();
+      stopAutoPlay();
+      isAutoPlayPaused = true;
+    });
+
+    carousel.addEventListener('mouseenter', function() {
+      stopAutoPlay();
+      isAutoPlayPaused = true;
+    });
+
+    carousel.addEventListener('mouseleave', function() {
+      isAutoPlayPaused = false;
       startAutoPlay();
     });
 
-    carousel.addEventListener('mouseenter', stopAutoPlay);
-    carousel.addEventListener('mouseleave', startAutoPlay);
-    carousel.addEventListener('touchstart', stopAutoPlay, { passive: true });
-    carousel.addEventListener('touchend', startAutoPlay, { passive: true });
+    carousel.addEventListener('touchstart', function() {
+      stopAutoPlay();
+      isAutoPlayPaused = true;
+    }, { passive: true });
+
+    carousel.addEventListener('touchend', function() {
+      isAutoPlayPaused = false;
+      startAutoPlay();
+    }, { passive: true });
+
+    carousel.addEventListener('scroll', function() {
+      window.requestAnimationFrame(handleScroll);
+    });
 
     carousel.addEventListener('keydown', function(e) {
       if (e.key === 'ArrowLeft') {
@@ -298,75 +254,14 @@
       }
     });
 
-    track.addEventListener('touchstart', function(e) {
-      touchStartX = e.changedTouches[0].screenX;
-      stopAutoPlay();
-    }, { passive: true });
+    buildDots();
+    updateButtons();
+    scrollToCard(0, 'auto');
+    startAutoPlay();
 
-    track.addEventListener('touchend', function(e) {
-      touchEndX = e.changedTouches[0].screenX;
-      const diff = touchStartX - touchEndX;
-
-      if (Math.abs(diff) > 40) {
-        if (diff > 0) {
-          nextSlide();
-        } else {
-          prevSlide();
-        }
-      }
-      startAutoPlay();
-    }, { passive: true });
-
-    createDots();
-
-    setTimeout(function() {
-      updateCarousel(false);
-      const totalSlides = Math.max(1, totalCards - cardsPerView + 1);
-      if (totalSlides > 1) {
-        startAutoPlay();
-      }
-    }, 150);
-
-    let resizeTimeout;
     window.addEventListener('resize', function() {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(function() {
-        const newCardsPerView = getCardsPerView();
-        const totalSlides = Math.max(1, totalCards - newCardsPerView + 1);
-
-        if (currentIndex >= totalSlides) {
-          currentIndex = totalSlides - 1;
-        }
-
-        updateCarousel(false);
-
-        const oldTotalSlides = dotsContainer.querySelectorAll('.about-carousel-dot').length;
-        if (oldTotalSlides !== totalSlides) {
-          createDots();
-        } else {
-          updateDots();
-        }
-
-        stopAutoPlay();
-        if (totalSlides > 1) {
-          startAutoPlay();
-        }
-      }, 250);
+      scrollToCard(currentIndex, 'auto');
     });
-
-    if ('IntersectionObserver' in window) {
-      const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-          if (entry.isIntersecting) {
-            updateCarousel(false);
-          }
-        });
-      }, {
-        threshold: 0.1
-      });
-
-      observer.observe(carousel);
-    }
   }
 
   // ============================================

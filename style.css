@@ -797,52 +797,62 @@ ul {
 
 .about-carousel-wrapper {
   position: relative;
-  overflow: hidden;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 12px 0;
+  overflow: visible;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  padding: 16px 0;
   width: 100%;
 }
 
 .about-carousel {
-  position: relative;
-  overflow: hidden;
-  padding: 0 48px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 68px;
   width: 100%;
   box-sizing: border-box;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 68px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  touch-action: pan-x;
+}
+
+.about-carousel::-webkit-scrollbar {
+  display: none;
 }
 
 .about-carousel-track {
   display: flex;
-  gap: 20px;
-  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: transform;
-  padding: 4px 0;
+  gap: 18px;
+  width: max-content;
+  padding: 18px 0;
 }
 
 .about-carousel-card {
-  flex: 0 0 calc(33.333% - 14px);
+  flex: 0 0 clamp(260px, 35vw, 340px);
+  scroll-snap-align: start;
   min-width: 260px;
-  max-width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
   overflow: hidden;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.2);
 }
 
 .about-carousel-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(201, 168, 76, 0.3);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-6px);
+  border-color: rgba(201, 168, 76, 0.35);
 }
 
 .about-carousel-image {
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
-  background: var(--color-black-light);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .about-carousel-image img {
@@ -889,19 +899,19 @@ ul {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 2;
-  width: 36px;
-  height: 36px;
+  z-index: 5;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(10, 10, 10, 0.85);
-  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(10, 10, 10, 0.75);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
   color: var(--color-white);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
   padding: 0;
 }
 
@@ -909,7 +919,7 @@ ul {
   background: var(--color-gold);
   color: var(--color-black);
   border-color: var(--color-gold);
-  transform: translateY(-50%) scale(1.05);
+  transform: translateY(-50%) scale(1.04);
 }
 
 .about-carousel-btn:active {
@@ -917,11 +927,11 @@ ul {
 }
 
 .about-carousel-btn-prev {
-  left: 6px;
+  left: 18px;
 }
 
 .about-carousel-btn-next {
-  right: 6px;
+  right: 18px;
 }
 
 .about-carousel-btn svg {
@@ -965,12 +975,12 @@ ul {
 /* Tablets e telas médias */
 @media (max-width: 1200px) {
   .about-carousel {
-    padding: 0 40px;
+    padding: 0 56px;
+    scroll-padding: 0 56px;
   }
 
   .about-carousel-card {
-    flex: 0 0 calc(50% - 10px);
-    min-width: 220px;
+    flex: 0 0 clamp(260px, 44vw, 320px);
   }
 }
 
@@ -990,11 +1000,12 @@ ul {
   }
   
   .about-carousel-card {
-    flex: 0 0 calc(50% - 10px);
+    flex: 0 0 clamp(260px, 48vw, 320px);
   }
   
   .about-carousel {
-    padding: 0 40px;
+    padding: 0 42px;
+    scroll-padding: 0 42px;
   }
   
   .about-btn {
@@ -1048,18 +1059,28 @@ ul {
   }
   
   .about-carousel-wrapper {
-    padding: 8px 0;
+    padding: 4px 0;
     margin: 0 -4px;
     border-radius: 18px;
   }
   
   .about-carousel {
-    padding: 0 36px;
+    padding: 0 18px;
+    scroll-padding: 0 18px;
+  }
+  
+  .about-carousel-track {
+    padding: 12px 0;
   }
   
   .about-carousel-card {
-    flex: 0 0 calc(50% - 10px);
-    min-width: 0;
+    flex: 0 0 100%;
+    min-width: 100%;
+    max-width: 100%;
+  }
+  
+  .about-carousel-image {
+    aspect-ratio: 3 / 2;
   }
   
   .about-carousel-info {
@@ -1079,21 +1100,21 @@ ul {
   }
   
   .about-carousel-btn {
-    width: 30px;
-    height: 30px;
+    width: 38px;
+    height: 38px;
   }
   
   .about-carousel-btn svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
   }
   
   .about-carousel-btn-prev {
-    left: 4px;
+    left: 10px;
   }
-  
+
   .about-carousel-btn-next {
-    right: 4px;
+    right: 10px;
   }
 }
 
@@ -1115,7 +1136,7 @@ ul {
   .about-text {
     font-size: 0.88rem;
     line-height: 1.7;
-    text-align: left;
+    text-align: center;
   }
   
   /* Botão ocupa toda largura em mobile */
@@ -1127,16 +1148,18 @@ ul {
   }
   
   .about-carousel {
-    padding: 0 32px;
+    padding: 0 14px;
   }
   
   .about-carousel-card {
-    flex: 0 0 calc(100% - 0px);
-    min-width: 0;
+    flex: 0 0 100%;
+    min-width: 100%;
+    max-width: 100%;
   }
   
   .about-carousel-image {
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 3 / 2;
+    max-height: 360px;
   }
   
   .about-carousel-info {
@@ -1148,23 +1171,23 @@ ul {
   }
   
   .about-carousel-btn {
-    width: 28px;
-    height: 28px;
+    width: 34px;
+    height: 34px;
   }
-  
+
   .about-carousel-btn svg {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
   }
-  
+
   .about-carousel-btn-prev {
-    left: 2px;
+    left: 8px;
   }
-  
+
   .about-carousel-btn-next {
-    right: 2px;
+    right: 8px;
   }
-  
+
   .about-carousel-dots {
     padding: 10px 0 4px;
     gap: 6px;
