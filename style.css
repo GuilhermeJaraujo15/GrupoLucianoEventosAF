@@ -1065,18 +1065,18 @@ ul {
   }
   
   .about-carousel {
-    padding: 0 18px;
-    scroll-padding: 0 18px;
+    padding: 0 16px;
+    scroll-padding: 0 16px;
   }
   
   .about-carousel-track {
-    padding: 12px 0;
+    padding: 10px 0;
   }
   
   .about-carousel-card {
-    flex: 0 0 100%;
-    min-width: 100%;
-    max-width: 100%;
+    flex: 0 0 min(88vw, 320px);
+    min-width: min(88vw, 320px);
+    max-width: min(88vw, 320px);
   }
   
   .about-carousel-image {
@@ -1148,18 +1148,19 @@ ul {
   }
   
   .about-carousel {
-    padding: 0 14px;
+    padding: 0 12px;
+    scroll-padding: 0 12px;
   }
   
   .about-carousel-card {
-    flex: 0 0 100%;
-    min-width: 100%;
-    max-width: 100%;
+    flex: 0 0 min(85vw, 300px);
+    min-width: min(85vw, 300px);
+    max-width: min(85vw, 300px);
   }
   
   .about-carousel-image {
     aspect-ratio: 3 / 2;
-    max-height: 360px;
+    max-height: 340px;
   }
   
   .about-carousel-info {
