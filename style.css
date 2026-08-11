@@ -810,6 +810,7 @@ ul {
   overflow: hidden;
   padding: 0 48px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .about-carousel-track {
@@ -822,7 +823,8 @@ ul {
 
 .about-carousel-card {
   flex: 0 0 calc(33.333% - 14px);
-  min-width: 0;
+  min-width: 260px;
+  max-width: 100%;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   overflow: hidden;
@@ -961,6 +963,17 @@ ul {
    ============================================ */
 
 /* Tablets e telas médias */
+@media (max-width: 1200px) {
+  .about-carousel {
+    padding: 0 40px;
+  }
+
+  .about-carousel-card {
+    flex: 0 0 calc(50% - 10px);
+    min-width: 220px;
+  }
+}
+
 @media (max-width: 992px) {
   .about-layout {
     grid-template-columns: 1fr;
@@ -1007,12 +1020,7 @@ ul {
     gap: 32px;
   }
   
-  .about-carousel-column {
-    order: 1;
-  }
-
   .about-text-column {
-    order: 2;
     text-align: center;
     align-items: center;
   }
@@ -1024,7 +1032,9 @@ ul {
   .about-text {
     font-size: 0.92rem;
     line-height: 1.7;
-    text-align: left;
+    text-align: center;
+    max-width: 620px;
+    width: 100%;
   }
   
   /* Botão centralizado em telas pequenas */
